@@ -1,0 +1,1 @@
+{"version":3,"file":"patterns.js","sourceRoot":"","sources":["patterns.ts"],"names":[],"mappings":";;;AACa,QAAA,gBAAgB,GAAG;IAE9B,WAAW,EAAE,aAAa;IAC1B,QAAQ,EAAE,UAAU;IAGpB,iBAAiB,EAAE,mBAAmB;IACtC,uBAAuB,EAAE,qBAAqB;IAG9C,wBAAwB,EAAE,sBAAsB;CACxC,CAAC;AAGE,QAAA,cAAc,GAAG;IAC5B,YAAY,EAAE,cAAc;IAC5B,iBAAiB,EAAE,mBAAmB;IACtC,2BAA2B,EAAE,6BAA6B;CAClD,CAAC"}

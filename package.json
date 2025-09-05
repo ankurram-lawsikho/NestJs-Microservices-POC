@@ -1,0 +1,27 @@
+{
+  "name": "nest-microservices-poc",
+  "version": "1.0.0",
+  "description": "NestJS Microservices Proof of Concept with User and Notification Services",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "quickstart": "npm run install:all && npm run build:all && npm run start:all",
+    "install:all": "npm install && npm run install:services",
+    "install:services": "cd services/user-service && npm install && cd ../notification-service && npm install && cd ../api-gateway && npm install",
+    "start:user": "cd services/user-service && npm run start:prod",
+    "start:notification": "cd services/notification-service && npm run start:prod",
+    "start:gateway": "cd services/api-gateway && npm run start:prod",
+    "start:all": "concurrently \"npm run start:user\" \"npm run start:notification\" \"npm run start:gateway\"",
+    "build:all": "npm run build:shared && npm run build:user && npm run build:notification && npm run build:gateway",
+    "build:shared": "cd packages/shared && npm run build",
+    "build:user": "cd services/user-service && npm run build",
+    "build:notification": "cd services/notification-service && npm run build",
+    "build:gateway": "cd services/api-gateway && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
