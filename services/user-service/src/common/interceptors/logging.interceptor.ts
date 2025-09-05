@@ -8,11 +8,36 @@ export class LoggingInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const startTime = Date.now();
-    const ctx = context.switchToRpc();
-    const data = ctx.getData();
-    const pattern = ctx.getContext().getPattern();
+    
+    // Determine if this is an HTTP or RPC request
+    const requestType = context.getType();
+    let pattern: string;
+    let data: any;
 
-    this.logger.log(`Processing microservice request: ${pattern}`, { data });
+    if (requestType === 'http') {
+      // Handle HTTP requests
+      const httpContext = context.switchToHttp();
+      const request = httpContext.getRequest();
+      pattern = `${request.method} ${request.url}`;
+      data = {
+        method: request.method,
+        url: request.url,
+        query: request.query,
+        params: request.params,
+        body: request.body,
+      };
+    } else {
+      // Handle RPC/microservice requests
+      const rpcContext = context.switchToRpc();
+      data = rpcContext.getData();
+      try {
+        pattern = rpcContext.getContext().getPattern();
+      } catch (error) {
+        pattern = 'unknown-pattern';
+      }
+    }
+
+    this.logger.log(`Processing ${requestType} request: ${pattern}`, { data });
 
     return next.handle().pipe(
       tap({
@@ -21,6 +46,7 @@ export class LoggingInterceptor implements NestInterceptor {
           this.logger.log(`Request completed successfully in ${duration}ms`, {
             pattern,
             duration,
+            requestType,
           });
         },
         error: (error) => {
@@ -28,6 +54,7 @@ export class LoggingInterceptor implements NestInterceptor {
           this.logger.error(`Request failed after ${duration}ms`, {
             pattern,
             duration,
+            requestType,
             error: error.message,
           });
         },

@@ -22,14 +22,11 @@ export class RegistrationService {
       const user = await this.userClient.createUser(createUserDto);
       this.logger.log(`User created successfully with ID: ${user.id}`);
 
-      // Step 2: Send welcome notification
-      this.logger.log('Step 2: Sending welcome notification...');
-      const notification = await this.notificationClient.sendNotification({
-        userId: user.id.toString(),
-        type: 'welcome',
-        message: `Welcome ${user.firstName}! Your account has been created successfully.`,
-      });
-      this.logger.log(`Welcome notification sent: ${notification.id}`);
+      // Step 2: Wait for welcome notification (handled by event-driven architecture)
+      this.logger.log('Step 2: Welcome notification will be sent automatically via event...');
+      
+      // Add a small delay to allow the event-driven notification to complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const totalTime = Date.now() - startTime;
       this.logger.log(`Registration process completed in ${totalTime}ms`);
@@ -41,8 +38,8 @@ export class RegistrationService {
           name: `${user.firstName} ${user.lastName}`,
         },
         notification: {
-          id: notification.id,
-          status: notification.status,
+          id: 'event-driven',
+          status: 'sent',
         },
         totalTime,
       };

@@ -81,4 +81,77 @@ export class NotificationsController {
       this.logger.error(`Failed to send welcome notification: ${error.message}`);
     }
   }
+
+  @MessagePattern('test.email')
+  async testEmail(
+    @Payload() data: { email: string },
+    @Ctx() context: RmqContext,
+  ): Promise<{ success: boolean; message: string }> {
+    this.logger.log(`Received test email request for: ${data.email}`);
+    
+    try {
+      const result = await this.notificationsService.testEmailConnection();
+      return {
+        success: result,
+        message: result ? 'Email connection test successful' : 'Email connection test failed'
+      };
+    } catch (error) {
+      this.logger.error(`Email test failed: ${error.message}`);
+      return {
+        success: false,
+        message: `Email test failed: ${error.message}`
+      };
+    }
+  }
+
+  // Additional MessagePattern handlers for API Gateway
+  @MessagePattern(MESSAGE_PATTERNS.GET_NOTIFICATIONS_BY_USER)
+  async getNotificationsByUser(@Payload() data: { userId: string; limit?: number }): Promise<NotificationResponseDto[]> {
+    this.logger.log(`Received get notifications by user request: ${data.userId}`);
+    return await this.notificationsService.getNotificationsByUser(data.userId, data.limit || 10);
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.GET_NOTIFICATIONS_WITH_ADVANCED_QUERY)
+  async getNotificationsWithAdvancedQuery(@Payload() filters: {
+    userId?: string;
+    type?: string;
+    status?: 'pending' | 'sent' | 'failed';
+    dateFrom?: Date;
+    dateTo?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<NotificationResponseDto[]> {
+    this.logger.log(`Received advanced notification search request`);
+    return await this.notificationsService.getNotificationsWithAdvancedQuery(filters);
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.GET_NOTIFICATION_STATS)
+  async getNotificationStats(): Promise<{
+    totalNotifications: number;
+    sentNotifications: number;
+    failedNotifications: number;
+    pendingNotifications: number;
+    notificationsByType: Array<{ type: string; count: number }>;
+    notificationsByDay: Array<{ day: string; count: number }>;
+  }> {
+    this.logger.log(`Received get notification stats request`);
+    return await this.notificationsService.getNotificationStats();
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.GET_FAILED_NOTIFICATIONS)
+  async getFailedNotifications(): Promise<NotificationResponseDto[]> {
+    this.logger.log(`Received get failed notifications request`);
+    return await this.notificationsService.getFailedNotifications();
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.RETRY_FAILED_NOTIFICATIONS)
+  async retryFailedNotifications(): Promise<{
+    retried: number;
+    successful: number;
+    failed: number;
+  }> {
+    this.logger.log(`Received retry failed notifications request`);
+    return await this.notificationsService.retryFailedNotifications();
+  }
+
 }

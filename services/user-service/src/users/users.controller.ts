@@ -84,4 +84,52 @@ export class UsersController {
       // Instead, we log the error and continue processing
     }
   }
+
+  // Additional MessagePattern handlers for API Gateway
+  @MessagePattern(MESSAGE_PATTERNS.GET_USER_BY_EMAIL)
+  async getUserByEmail(@Payload() data: { email: string }): Promise<UserResponseDto | null> {
+    this.logger.log(`Received get user by email request: ${data.email}`);
+    return await this.usersService.getUserByEmail(data.email);
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.GET_USERS_WITH_ADVANCED_QUERY)
+  async getUsersWithAdvancedQuery(@Payload() filters: {
+    search?: string;
+    createdAfter?: Date;
+    limit?: number;
+    offset?: number;
+  }): Promise<UserResponseDto[]> {
+    this.logger.log(`Received advanced user search request`);
+    return await this.usersService.getUsersWithAdvancedQuery(filters);
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.GET_USER_STATS)
+  async getUserStats(): Promise<{
+    totalUsers: number;
+    usersThisMonth: number;
+    usersByMonth: Array<{ month: string; count: number }>;
+  }> {
+    this.logger.log(`Received get user stats request`);
+    return await this.usersService.getUserStats();
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.FIND_USERS_WITH_SIMILAR_NAMES)
+  async findUsersWithSimilarNames(@Payload() data: { name: string }): Promise<UserResponseDto[]> {
+    this.logger.log(`Received find similar users request: ${data.name}`);
+    return await this.usersService.findUsersWithSimilarNames(data.name);
+  }
+
+  @MessagePattern(MESSAGE_PATTERNS.GET_USERS_CREATED_BETWEEN)
+  async getUsersCreatedBetween(@Payload() data: { startDate: Date; endDate: Date }): Promise<UserResponseDto[]> {
+    this.logger.log(`Received get users by date range request`);
+    return await this.usersService.getUsersCreatedBetween(data.startDate, data.endDate);
+  }
+
+  // Single JOIN Query MessagePattern handler
+  @MessagePattern(MESSAGE_PATTERNS.GET_USERS_WITH_NOTIFICATIONS)
+  async getUsersWithNotifications(): Promise<Array<UserResponseDto & { notificationCount: number; notifications: Array<{ id: string; type: string; message: string; status: string; createdAt: Date }> }>> {
+    this.logger.log(`Received get users with notifications request`);
+    return await this.usersService.getUsersWithNotifications();
+  }
+
 }
